@@ -14,7 +14,10 @@ from django.utils.timezone import now
 # bazovoy kodlar
 def custom_logout(request):
     logout(request)
-    return redirect('login')  
+    return redirect('login')
+  
+def handler404(request, exception):
+    return render(request, '404.html', status=404)
 
 @login_required
 def add_fuel(request):

@@ -16,7 +16,14 @@ class FuelPurchaseForm(forms.ModelForm):
             'petrol_type': forms.Select(attrs={'class': 'form-control'}),
             'litres': forms.NumberInput(attrs={'class': 'form-control'}),  # IntegerField emas, NumberInput ishlatiladi
         }
-
+class FuelPurchaseForm1(forms.ModelForm):
+    class Meta:
+        model = FuelPurchase
+        fields = ['petrol_type', 'litres']
+        widgets = {
+            'petrol_type': forms.Select(attrs={'class': 'form-control'}),
+            'litres': forms.NumberInput(attrs={'class': 'form-control'}),  # IntegerField emas, NumberInput ishlatiladi
+        }
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer

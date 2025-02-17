@@ -10,7 +10,7 @@ from .forms import *
 from django.contrib import messages
 from django.db.models import Count
 from django.utils.timezone import now
-
+from django.db.models import Q
 # bazovoy kodlar
 def custom_logout(request):
     logout(request)
@@ -35,13 +35,26 @@ def add_fuel(request):
 #asosiy kodlar
 class CustomerListView(LoginRequiredMixin, View):
     def get(self, request):
+        query = request.GET.get('q', '')  # Qidiruv so‘rovi
+        selected_date = request.GET.get('date', '')  # Kalendar orqali tanlangan sana
+
         customers_list = Customer.objects.all()
 
-        # Bugungi qo‘shilgan foydalanuvchilar soni
+        # Qidiruv
+        if query:
+            customers_list = customers_list.filter(
+                Q(unique_id__icontains=query) |
+                Q(full_name__icontains=query) |
+                Q(phone_number__icontains=query) |
+                Q(address__icontains=query)
+            )
+
+        if selected_date:
+            customers_list = customers_list.filter(created_at__date=selected_date)
+            
         today = now().date()
         daily_customers = Customer.objects.filter(created_at__date=today).count()
 
-        # Bugungi eng ko‘p sotilgan yoqilg‘i turini topish
         daily_top_petrol = (
             FuelPurchase.objects.filter(date__date=today)
             .values('petrol_type')
@@ -50,18 +63,21 @@ class CustomerListView(LoginRequiredMixin, View):
             .first()
         )
         daily_most_used_petrol = daily_top_petrol['petrol_type'] if daily_top_petrol else None  
-
         paginator = Paginator(customers_list, 25)
         page_number = request.GET.get('page')
         customers = paginator.get_page(page_number)
+
         fuel_form = FuelPurchaseForm()
         customer_form = CustomerForm()
+
         return render(request, 'customer_list.html', {
             'customers': customers,
             'customer_form': customer_form,
+            'fuel_form': fuel_form,
             'daily_customers': daily_customers,
             'daily_most_used_petrol': daily_most_used_petrol,
-            'fuel_form': fuel_form,
+            'query': query,
+            'selected_date': selected_date
         })
 
     def post(self, request):
@@ -100,7 +116,7 @@ class CustomerListView(LoginRequiredMixin, View):
 class CustomerProfileView(LoginRequiredMixin, View):
     def get(self, request, unique_id):
         customer = get_object_or_404(Customer, unique_id=unique_id)
-        purchases_list = FuelPurchase.objects.filter(customer=customer).order_by('-id')  # So‘nggi xaridlar yuqorida
+        purchases_list = FuelPurchase.objects.filter(customer=customer).order_by('-id')
 
         # Xaridlar ro‘yxatiga ballarni qo‘shish
         for purchase in purchases_list:
@@ -113,16 +129,38 @@ class CustomerProfileView(LoginRequiredMixin, View):
             else:
                 purchase.points = 0
 
-        # Paginatsiya (har sahifada 10 ta xarid)
+        paginator = Paginator(purchases_list, 10)
+        page_number = request.GET.get('page')
+        purchases = paginator.get_page(page_number)
+
+        form = FuelPurchaseForm1()
+
+        return render(request, 'customer_profile.html', {
+            'customer': customer,
+            'purchases': purchases,
+            'form': form
+        })
+
+    def post(self, request, unique_id):
+        customer = get_object_or_404(Customer, unique_id=unique_id)
+        form = FuelPurchaseForm1(request.POST)
+
+        if form.is_valid():
+            purchase = form.save(commit=False)
+            purchase.customer = customer
+            purchase.save()
+            return redirect('customer_profile', unique_id=unique_id)
+
+        purchases_list = FuelPurchase.objects.filter(customer=customer).order_by('-id')
         paginator = Paginator(purchases_list, 10)
         page_number = request.GET.get('page')
         purchases = paginator.get_page(page_number)
 
         return render(request, 'customer_profile.html', {
             'customer': customer,
-            'purchases': purchases
+            'purchases': purchases,
+            'form': form
         })
-    
     
 # @login_required
 # def index(request):

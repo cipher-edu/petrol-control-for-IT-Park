@@ -118,14 +118,24 @@ class CustomerProfileView(LoginRequiredMixin, View):
         customer = get_object_or_404(Customer, unique_id=unique_id)
         purchases_list = FuelPurchase.objects.filter(customer=customer).order_by('-id')
 
-        # Xaridlar ro‘yxatiga ballarni qo‘shish
+        fuel_points = {
+            80: 0,
+            91: 0,
+            92: 0,
+            95: 0
+        }
+
         for purchase in purchases_list:
             if purchase.petrol_type == 80:
                 purchase.points = purchase.litres * 0.1
+                fuel_points[80] += purchase.points
             elif purchase.petrol_type in [91, 92]:
                 purchase.points = purchase.litres * 0.2
+                fuel_points[91] += purchase.points
+                fuel_points[92] += purchase.points
             elif purchase.petrol_type == 95:
                 purchase.points = purchase.litres * 0.3
+                fuel_points[95] += purchase.points
             else:
                 purchase.points = 0
 
@@ -138,7 +148,8 @@ class CustomerProfileView(LoginRequiredMixin, View):
         return render(request, 'customer_profile.html', {
             'customer': customer,
             'purchases': purchases,
-            'form': form
+            'form': form,
+            'fuel_points': fuel_points
         })
 
     def post(self, request, unique_id):

@@ -9,5 +9,5 @@ urlpatterns = [
     path('customers/', CustomerListView.as_view(), name='customer_list'),
     path('customers/<str:unique_id>/profile/', CustomerProfileView.as_view(), name='customer_profile'),
     path('add_fuel/', add_fuel, name='add_fuel'),
-    path('index2/', index2, name='index2'),
+    path('index2/', CustomerProfileView1.as_view(), name='index2'),
 ]

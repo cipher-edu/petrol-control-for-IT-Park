@@ -1,0 +1,156 @@
+{% load static %}
+<header id="page-topbar">
+    <div class="navbar-header">
+        <!-- LOGO -->
+        <div class="navbar-brand-box d-flex align-items-left">
+            <a href="{% url 'home' %}" class="logo">
+                <i class="mdi mdi-album"></i>
+                <span>
+                    CIPHER
+                </span>
+            </a>
+
+            <button type="button" class="btn btn-sm mr-2 d-lg-none px-3 font-size-16 header-item waves-effect waves-light" id="vertical-menu-btn">
+                <i class="fa fa-fw fa-bars"></i>
+            </button>
+        </div>
+
+        <div class="d-flex align-items-center">
+
+            <div class="dropdown d-none d-sm-inline-block ml-2">
+                <button type="button" class="btn header-item noti-icon waves-effect waves-light" id="page-header-search-dropdown"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="mdi mdi-magnify"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right p-0"
+                    aria-labelledby="page-header-search-dropdown">
+                    
+                    <form method="GET" action=""class="p-3">
+                        <div class="form-group m-0">
+                            <div class="input-group">
+                                <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Qidirish..." aria-label="Recipient's username">
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="submit"><i class="mdi mdi-magnify"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+<!-- -->
+            
+        </div>
+    </div>
+</header>
+<div class="vertical-menu">
+
+    <div data-simplebar class="h-100">
+
+        <!--- Sidemenu -->
+        <div id="sidebar-menu">
+            <!-- Left Menu Start -->
+            <ul class="metismenu list-unstyled" id="side-menu">
+                <li class="menu-title">Menyu</li>
+
+                <li>
+                    <a href="{% url 'index2' %}" class="waves-effect"><i class="feather-airplay"></i><span class="badge badge-pill badge-info float-right">3</span><span>Bosh sahifa</span></a>
+                </li>
+
+                <li>
+                    <a href="" class="has-arrow waves-effect"><i class="feather-briefcase"></i><span>Mijozlar ro'yxati</span></a>
+                </li>
+
+                <!-- <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect"><i class="feather-list"></i><span>Tables</span></a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a href="tables-basic.html">Basic Tables</a></li>
+                        <li><a href="tables-datatables.html">Data Tables</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect"><i class="feather-bar-chart-2"></i><span>Charts</span></a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a href="charts-morris.html">Morris</a></li>
+                        <li><a href="charts-google.html">Google</a></li>
+                        <li><a href="charts-chartjs.html">Chartjs</a></li>
+                        <li><a href="charts-sparkline.html">Sparkline</a></li>
+                        <li><a href="charts-knob.html">Jquery Knob</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="javascript: void(0);" class="waves-effect"><i class="feather-book"></i><span class="badge badge-pill badge-danger float-right">6</span><span>Forms</span></a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a href="forms-elements.html">Elements</a></li>
+                        <li><a href="forms-plugins.html">Plugins</a></li>
+                        <li><a href="forms-validation.html">Validation</a></li>
+                        <li><a href="forms-mask.html">Masks</a></li>
+                        <li><a href="forms-quilljs.html">Quilljs</a></li>
+                        <li><a href="forms-uploads.html">File Uploads</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect"><i class="feather-box"></i><span>Icons</span></a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a href="icons-feather.html">Feather Icons</a></li>
+                        <li><a href="icons-materialdesign.html">Material Design</a></li>
+                        <li><a href="icons-dripicons.html">Dripicons</a></li>
+                        <li><a href="icons-fontawesome.html">Font awesome</a></li>
+                    </ul>
+                </li>
+
+                <li class="menu-title">More</li>
+
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect"><i class="feather-copy"></i><span>Pages</span></a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a href="pages-invoice.html">Invoice</a></li>
+                        <li><a href="pages-starter.html">Starter Page</a></li>
+                        <li><a href="pages-maintenance.html">Maintenance</a></li>
+                        <li><a href="pages-faqs.html">FAQs</a></li>
+                        <li><a href="pages-pricing.html">Pricing</a></li>
+                        <li><a href="pages-login.html">Login</a></li>
+                        <li><a href="pages-register.html">Register</a></li>
+                        <li><a href="pages-recoverpw.html">Recover Password</a></li>
+                        <li><a href="pages-lock-screen.html">Lock Screen</a></li>
+                        <li><a href="pages-404.html">Error 404</a></li>
+                        <li><a href="pages-500.html">Error 500</a></li>
+                    </ul>
+                </li>
+
+                <li><a href="calendar.html" class=" waves-effect"><i class="feather-calendar"></i><span>Calendar</span></a></li>
+
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect"><i class="feather-map"></i><span>Maps</span></a>
+                    <ul class="sub-menu" aria-expanded="false">
+                        <li><a href="maps-google.html">Google Maps</a></li>
+                        <li><a href="maps-vector.html">Vector Maps</a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <a href="javascript: void(0);" class="has-arrow waves-effect"><i class="mdi mdi-share-variant"></i><span>Multi Level</span></a>
+                    <ul class="sub-menu" aria-expanded="true">
+                        <li><a href="javascript: void(0);">Level 1.1</a></li>
+                        <li><a href="javascript: void(0);" class="has-arrow">Level 1.2</a>
+                            <ul class="sub-menu" aria-expanded="true">
+                                <li><a href="javascript: void(0);">Level 2.1</a></li>
+                                <li><a href="javascript: void(0);">Level 2.2</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+
+            </ul>
+
+            <div class="help-box">
+                <h5 class="text-muted font-size-15 mb-3">For Help & Support</h5>
+                <p class="font-size-13"><span class="font-weight-bold">Email:</span> <br> info@domain.com</p>
+                <p class="mb-0 font-size-13"><span class="font-weight-bold">Call:</span> <br> (+123) 123 456 789</p>
+            </div> -->
+        </div>
+        <!-- Sidebar -->
+    </div>
+</div>

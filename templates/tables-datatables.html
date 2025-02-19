@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Petrol control - Admin & Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta content="Petrol controle Admin & Dashboard" name="description" />
+    <meta content="CIPHER-EDU" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}">
+    <link href="{% static 'assets/plugins/datatables/dataTables.bootstrap4.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/plugins/datatables/responsive.bootstrap4.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/plugins/datatables/buttons.bootstrap4.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/plugins/datatables/select.bootstrap4.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/css/theme.min.css' %}" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+</head>
+<body>
+    <div id="layout-wrapper">
+        {% include 'base/nav.html' %}
+        <div class="main-content">
+            <div class="page-content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-flex align-items-center justify-content-between">
+                                <h4 class="mb-0 font-size-18">Ma'lumotlar ro'yxati</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="javascript: void(0);">Sahifalar</a></li>
+                                        <li class="breadcrumb-item active">Ma'lumotlar ro'yxati</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="alert alert-info">
+                                            <strong>Bugungi yangi foydalanuvchilar:</strong> {{ daily_customers }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="alert alert-warning">
+                                            <strong>Bugungi eng ko‘p ishlatilgan yonilg‘i:</strong> 
+                                            {% if daily_most_used_petrol %}
+                                                {{ daily_most_used_petrol }}
+                                            {% else %}
+                                                Ma'lumot yo‘q
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% if messages %}
+                            <div class="alert alert-dismissible p-2 m-2">
+                                {% for message in messages %}
+                                <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} text-sm p-2">
+                                    <small>{{ message }}</small>
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <form method="GET" action="" class="form-inline mb-3">
+                                <input type="text" name="q" value="{{ query }}" class="form-control mr-2" placeholder="Qidirish...">
+                                <input type="text" id="date-picker" name="date" class="form-control mr-2" value="{{ selected_date }}" placeholder="Kerakli sanani tanlang">
+                                <button type="submit" class="btn btn-primary">Filtrlash</button>
+                            </form>
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body">
+            
+                                            <h4 class="card-title">Foydalanuvchilar Ro'yxati</h4>
+                                            <p class="card-subtitle mb-4">
+                                                <a href="#addFoydalanuvchiModal" class="btn btn-primary waves-effect waves-light" data-toggle="modal"> <span>Qo'shish</span></a>    
+                                                <a href="#addEmployeeModal" class="btn btn-outline-success waves-effect waves-light" data-toggle="modal"> <span>Qo'shish</span></a>
+                                                <a href="{% url 'logout' %}" class="btn btn-outline-danger waves-effect waves-light" data-toggle="modal"> <span>Chiqish</span></a>                        
+                                            </p>
+                                            <div class="table-rep-plugin">
+                                                <div class="table-responsive b-0" data-pattern="priority-columns">
+                                                    <table id="tech-companies-1" class="table  table-striped">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Foydalanuvchi ID</th>
+                                                                <th>Ism</th>
+                                                                <th>Telefon</th>
+                                                                <th>Manzil</th>
+                                                                <th>Jami Ballar</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for customer in customers %}
+                                                            <tr>
+                                                                <td>
+                                                                    <a href="{% url 'customer_profile' customer.unique_id %}">
+                                                                        {{ customer.unique_id }}
+                                                                    </a>
+                                                                </td>
+                                                                <td>{{ customer.full_name }}</td>
+                                                                <td>{{ customer.phone_number }}</td>
+                                                                <td>{{ customer.address }}</td>
+                                                                <td>{{ customer.total_points }}</td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                
+                                            </div>
+                                            <div class="clearfix">
+                                                <div class="hint-text">
+                                                    Barcha foydalanuvchilar <b>{{ customers.start_index }}</b> dan <b>{{ customers.end_index }}</b> gacha <b>{{ customers.paginator.count }}</b> umumiy
+                                                </div>
+                                                <ul class="pagination">
+                                                    {% if customers.has_previous %}
+                                                        <li class="page-item">
+                                                            <a href="?page={{ customers.previous_page_number }}" class="page-link">Ortga</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class="page-item disabled"><a class="page-link">Ortga</a></li>
+                                                    {% endif %}
+                                                    {% for num in customers.paginator.page_range %}
+                                                        {% if customers.number == num %}
+                                                            <li class="page-item active"><a href="#" class="page-link">{{ num }}</a></li>
+                                                        {% else %}
+                                                            <li class="page-item"><a href="?page={{ num }}" class="page-link">{{ num }}</a></li>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    {% if customers.has_next %}
+                                                        <li class="page-item">
+                                                            <a href="?page={{ customers.next_page_number }}" class="page-link">Oldinga</a>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class="page-item disabled"><a class="page-link">Oldinga</a></li>
+                                                    {% endif %}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> <!-- end col -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            2025 © IT Park Navoiy.
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-sm-right d-none d-sm-block">
+                                Design & Develop by CIPHER-EDU
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    <div class="menu-overlay"></div>
+    <div id="addFoydalanuvchiModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="{% url 'index2' %}">
+                    <input type="hidden" name="add_customer" value="1">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Qo'shish</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        {% csrf_token %} 
+                        {{ customer_form.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Ortga">
+                        <input type="submit" class="btn btn-success" value="Qo'shish">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="addEmployeeModal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form method="post" action="{% url 'index2' %}">
+                    <input type="hidden" name="add_fuel" value="1">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Qo'shish</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        {% csrf_token %} 
+                        {{ fuel_form.as_p }}
+                    </div>
+                    <div class="modal-footer">
+                        <input type="button" class="btn btn-default" data-dismiss="modal" value="Ortga">
+                        <input type="submit" class="btn btn-success" value="Qo'shish">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/js/metismenu.min.js' %}"></script>
+    <script src="{% static 'assets/js/waves.js' %}"></script>
+    <script src="{% static 'assets/js/simplebar.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/dataTables.bootstrap4.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/responsive.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/dataTables.buttons.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/buttons.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/buttons.html5.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/buttons.flash.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/buttons.print.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/dataTables.keyTable.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/dataTables.select.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/pdfmake.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/datatables/vfs_fonts.js' %}"></script>
+    <script src="{% static 'assets/pages/datatables-demo.js' %}"></script>
+    <script src="{% static 'assets/js/theme.js' %}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+                flatpickr("#date-picker", {
+                    dateFormat: "Y-m-d",
+                    altInput: true,
+                    altFormat: "F j, Y",
+                    allowInput: true
+                });
+            });
+        $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip();
+            var checkbox = $('table tbody input[type="checkbox"]');
+            $("#selectAll").click(function(){
+                if(this.checked){
+                    checkbox.each(function(){
+                        this.checked = true;
+                    });
+                } else{
+                    checkbox.each(function(){
+                        this.checked = false;
+                    });
+                } 
+            });
+            checkbox.click(function(){
+                if(!this.checked){
+                    $("#selectAll").prop("checked", false);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -32,7 +32,7 @@
                           
                           <form method="POST" class="register-form" id="login-form">
                               {% csrf_token %}
-                              <input type="hidden" name="next" value="/admin/">
+                              <input type="hidden" name="next" value="/">
                               <div class="form-group">
                                   <label for="your_name"><i class="zmdi zmdi-account material-icons-name"></i></label>
                                   {{form.username|append_attr:"placeholder:username"}}

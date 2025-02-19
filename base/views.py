@@ -101,6 +101,8 @@ class CustomerListView(LoginRequiredMixin, View):
             customer_form.save()
             messages.success(request, "Foydalanuvchi muvaffaqiyatli qo‘shildi!")
             return redirect('customer_list')
+        else:
+            messages.error(request, "Ma'lumotlarni to'ldiring. Xatolik yuz berdi!")
 
         return self.get(request)
 
@@ -118,14 +120,24 @@ class CustomerProfileView(LoginRequiredMixin, View):
         customer = get_object_or_404(Customer, unique_id=unique_id)
         purchases_list = FuelPurchase.objects.filter(customer=customer).order_by('-id')
 
-        # Xaridlar ro‘yxatiga ballarni qo‘shish
+        fuel_points = {
+            80: 0,
+            91: 0,
+            92: 0,
+            95: 0
+        }
+
         for purchase in purchases_list:
             if purchase.petrol_type == 80:
                 purchase.points = purchase.litres * 0.1
+                fuel_points[80] += purchase.points
             elif purchase.petrol_type in [91, 92]:
                 purchase.points = purchase.litres * 0.2
+                fuel_points[91] += purchase.points
+                fuel_points[92] += purchase.points
             elif purchase.petrol_type == 95:
                 purchase.points = purchase.litres * 0.3
+                fuel_points[95] += purchase.points
             else:
                 purchase.points = 0
 
@@ -138,7 +150,8 @@ class CustomerProfileView(LoginRequiredMixin, View):
         return render(request, 'customer_profile.html', {
             'customer': customer,
             'purchases': purchases,
-            'form': form
+            'form': form,
+            'fuel_points': fuel_points
         })
 
     def post(self, request, unique_id):
@@ -149,7 +162,10 @@ class CustomerProfileView(LoginRequiredMixin, View):
             purchase = form.save(commit=False)
             purchase.customer = customer
             purchase.save()
+            messages.success(request, "Yonilg‘i muvaffaqiyatli saqlandi!")
             return redirect('customer_profile', unique_id=unique_id)
+        else:
+            messages.error(request, "Ma'lumotlarni to'ldiring. Xatolik yuz berdi!")
 
         purchases_list = FuelPurchase.objects.filter(customer=customer).order_by('-id')
         paginator = Paginator(purchases_list, 10)
@@ -161,7 +177,87 @@ class CustomerProfileView(LoginRequiredMixin, View):
             'purchases': purchases,
             'form': form
         })
-    
+
+class CustomerProfileView1(LoginRequiredMixin, View):
+    def get(self, request):
+        query = request.GET.get('q', '')  # Qidiruv so‘rovi
+        selected_date = request.GET.get('date', '')  # Kalendar orqali tanlangan sana
+
+        customers_list = Customer.objects.all()
+
+        # Qidiruv
+        if query:
+            customers_list = customers_list.filter(
+                Q(unique_id__icontains=query) |
+                Q(full_name__icontains=query) |
+                Q(phone_number__icontains=query) |
+                Q(address__icontains=query)
+            )
+
+        if selected_date:
+            customers_list = customers_list.filter(created_at__date=selected_date)
+            
+        today = now().date()
+        daily_customers = Customer.objects.filter(created_at__date=today).count()
+
+        daily_top_petrol = (
+            FuelPurchase.objects.filter(date__date=today)
+            .values('petrol_type')
+            .annotate(count=Count('petrol_type'))
+            .order_by('-count')
+            .first()
+        )
+        daily_most_used_petrol = daily_top_petrol['petrol_type'] if daily_top_petrol else None  
+        paginator = Paginator(customers_list, 15)
+        page_number = request.GET.get('page')
+        customers = paginator.get_page(page_number)
+
+        fuel_form = FuelPurchaseForm()
+        customer_form = CustomerForm()
+
+        return render(request, 'tables-datatables.html', {
+            'customers': customers,
+            'customer_form': customer_form,
+            'fuel_form': fuel_form,
+            'daily_customers': daily_customers,
+            'daily_most_used_petrol': daily_most_used_petrol,
+            'query': query,
+            'selected_date': selected_date
+        })
+
+    def post(self, request):
+        if 'add_customer' in request.POST:
+            return self.add_customer(request)
+        elif 'add_fuel' in request.POST:
+            return self.add_fuel(request)
+        return redirect('index2')
+
+    def add_customer(self, request):
+        customer_form = CustomerForm(request.POST)
+        
+        phone_number = request.POST.get('phone_number')
+        full_name = request.POST.get('full_name')
+
+        if Customer.objects.filter(phone_number=phone_number).exists():
+            messages.error(request, "Bu telefon raqami bilan foydalanuvchi allaqachon mavjud!")
+        elif Customer.objects.filter(full_name=full_name).exists():
+            messages.error(request, "Bu ism bilan foydalanuvchi allaqachon mavjud!")
+        elif customer_form.is_valid():
+            customer_form.save()
+            messages.success(request, "Foydalanuvchi muvaffaqiyatli qo‘shildi!")
+            return redirect('index2')
+
+        return self.get(request)
+
+    def add_fuel(self, request):
+        fuel_form = FuelPurchaseForm(request.POST)
+        if fuel_form.is_valid():
+            fuel_form.save()
+            messages.success(request, "Yonilg‘i muvaffaqiyatli saqlandi!")
+        else:
+            messages.error(request, "Yonilg‘i saqlanmadi, ma'lumotlarni tekshiring!")
+        return redirect('index2')
+
 # @login_required
 # def index(request):
 #     customers = Customer.objects.all()
@@ -185,4 +281,4 @@ class CustomerProfileView(LoginRequiredMixin, View):
 #             return redirect('admin') 
 #         else:
 #             return render(request, 'login.html', {'error': 'Noto‘g‘ri foydalanuvchi nomi yoki parol'})  # Xato xabari
-#     return render(request, 'login.html')  
+#     return render(request, 'login.html')

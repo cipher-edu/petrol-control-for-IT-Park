@@ -172,7 +172,10 @@ class CustomerProfileView(LoginRequiredMixin, View):
             'purchases': purchases,
             'form': form
         })
-    
+
+def index2(request):
+
+    return render(request, 'tables-datatables.html',)
 # @login_required
 # def index(request):
 #     customers = Customer.objects.all()

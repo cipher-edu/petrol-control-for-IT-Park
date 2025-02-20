@@ -208,7 +208,7 @@ class CustomerProfileView1(LoginRequiredMixin, View):
             .first()
         )
         daily_most_used_petrol = daily_top_petrol['petrol_type'] if daily_top_petrol else None  
-        paginator = Paginator(customers_list, 25)
+        paginator = Paginator(customers_list, 15)
         page_number = request.GET.get('page')
         customers = paginator.get_page(page_number)
 

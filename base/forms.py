@@ -1,6 +1,5 @@
 from django import forms
-from .models import FuelPurchase
-from .models import *
+from .models import FuelPurchase, Customer, Moyka,MoykaCustomer
 
 
 class LoginForm(forms.Form):
@@ -27,6 +26,27 @@ class FuelPurchaseForm1(forms.ModelForm):
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
+        fields = ['phone_number', 'full_name', 'address']
+        widgets = {
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Telefon raqam'}),
+            'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Foydalanuvchi ismi'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Manzil', 'rows': 3}),
+        }
+
+
+class MoykaForm(forms.ModelForm):
+    class Meta:
+        model = Moyka
+        fields = ['customer', 'service_type', 'summa']
+        widgets = {
+            'customer': forms.Select(attrs={'class': 'form-control'}),
+            'service_type': forms.Select(attrs={'class': 'form-control'}),
+            'summa': forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+
+class MoykaCustomerForm(forms.ModelForm):
+    class Meta:
+        model = MoykaCustomer
         fields = ['phone_number', 'full_name', 'address']
         widgets = {
             'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Telefon raqam'}),

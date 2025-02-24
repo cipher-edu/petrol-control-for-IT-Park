@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.shortcuts import render, redirect
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import *
@@ -11,6 +10,7 @@ from django.contrib import messages
 from django.db.models import Count
 from django.utils.timezone import now
 from django.db.models import Q
+
 # bazovoy kodlar
 def custom_logout(request):
     logout(request)
@@ -69,11 +69,13 @@ class CustomerListView(LoginRequiredMixin, View):
 
         fuel_form = FuelPurchaseForm()
         customer_form = CustomerForm()
+        moyka_form = MoykaForm()
 
         return render(request, 'customer_list.html', {
             'customers': customers,
             'customer_form': customer_form,
             'fuel_form': fuel_form,
+            'moyka_form': moyka_form,
             'daily_customers': daily_customers,
             'daily_most_used_petrol': daily_most_used_petrol,
             'query': query,
@@ -258,27 +260,145 @@ class CustomerProfileView1(LoginRequiredMixin, View):
             messages.error(request, "Yonilg‘i saqlanmadi, ma'lumotlarni tekshiring!")
         return redirect('index2')
 
-# @login_required
-# def index(request):
-#     customers = Customer.objects.all()
-#     form = FuelPurchaseForm()
+class MoykaCustomerListView(LoginRequiredMixin, View):
+    def get(self, request):
+        query = request.GET.get('q', '')  # Qidiruv so‘rovi
+        selected_date = request.GET.get('date', '')  # Kalendar orqali tanlangan sana
 
-#     if request.method == 'POST':
-#         form = FuelPurchaseForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('home')  # 'index' emas, 'home' bo‘lishi kerak
+        customers_list = MoykaCustomer.objects.all()
 
-#     return render(request, 'index.html', {'customers': customers, 'form': form})
+        # Qidiruv
+        if query:
+            customers_list = customers_list.filter(
+               Q(unique_id__icontains=query) |
+                Q(full_name__icontains=query) |
+                Q(phone_number__icontains=query) |
+                Q(address__icontains=query)
+            )
 
-# def login_view(request):
-#     if request.method == 'POST':
-#         username = request.POST['username'] 
-#         password = request.POST['password'] 
-#         user = authenticate(request, username=username, password=password)  
-#         if user is not None:
-#             login(request, user) 
-#             return redirect('admin') 
-#         else:
-#             return render(request, 'login.html', {'error': 'Noto‘g‘ri foydalanuvchi nomi yoki parol'})  # Xato xabari
-#     return render(request, 'login.html')
+        if selected_date:
+            customers_list = customers_list.filter(created_at__date=selected_date)
+            
+        today = now().date()
+        daily_customers = MoykaCustomer.objects.filter(created_at__date=today).count()
+
+        daily_top_service = (
+            Moyka.objects.filter(date__date=today)
+            .values('service_type')
+            .annotate(count=Count('service_type'))
+            .order_by('-count')
+            .first()
+        )
+        daily_most_used_service = daily_top_service['service_type'] if daily_top_service else None  
+        paginator = Paginator(customers_list, 25)
+        page_number = request.GET.get('page')
+        customers = paginator.get_page(page_number)
+
+        moyka_form = MoykaForm()
+        customer_form = MoykaCustomerForm()
+
+        return render(request, 'moyka_datatables.html', {
+            'customers': customers,
+            'customer_form': customer_form,
+            'moyka_form': moyka_form,
+            'daily_customers': daily_customers,
+            'daily_most_used_service': daily_most_used_service,
+            'query': query,
+            'selected_date': selected_date
+        })
+
+    def post(self, request):
+        if 'add_customer' in request.POST:
+            return self.add_customer(request)
+        elif 'add_moyka' in request.POST:
+            return self.add_moyka(request)
+        return redirect('moyka_list')
+
+    def add_customer(self, request):
+        customer_form = MoykaCustomerForm(request.POST)
+        
+        phone_number = request.POST.get('phone_number')
+        full_name = request.POST.get('full_name')
+
+        if MoykaCustomer.objects.filter(phone_number=phone_number).exists():
+            messages.error(request, "Bu telefon raqami bilan foydalanuvchi allaqachon mavjud!")
+        elif MoykaCustomer.objects.filter(full_name=full_name).exists():
+            messages.error(request, "Bu ism bilan foydalanuvchi allaqachon mavjud!")
+        elif customer_form.is_valid():
+            customer_form.save()
+            messages.success(request, "Foydalanuvchi muvaffaqiyatli qo‘shildi!")
+            return redirect('moyka_list')
+        else:
+            messages.error(request, "Ma'lumotlarni to'ldiring. Xatolik yuz berdi!")
+
+        return self.get(request)
+
+    def add_moyka(self, request):
+        moyka_form = MoykaForm(request.POST)
+        if moyka_form.is_valid():
+            moyka_form.save()
+            messages.success(request, "Moyka muvaffaqiyatli saqlandi!")
+        else:
+            messages.error(request, "Moyka saqlanmadi, ma'lumotlarni tekshiring!")
+        return redirect('moyka_list')
+
+class MoykaCustomerProfileView(LoginRequiredMixin, View):
+    def get(self, request, unique_id):
+        customer = get_object_or_404(MoykaCustomer, unique_id=unique_id)
+        moyka_list = Moyka.objects.filter(customer=customer).order_by('-id')
+
+        service_points = {
+            'Ekonom': 0,
+            'Bussines': 0,
+            'Premium': 0
+        }
+
+        for moyka in moyka_list:
+            if moyka.service_type == 'Ekonom':
+                moyka.points = moyka.summa * 0.1
+                service_points['Ekonom'] += moyka.points
+            elif moyka.service_type == 'Bussines':
+                moyka.points = moyka.summa * 0.2
+                service_points['Bussines'] += moyka.points
+            elif moyka.service_type == 'Premium':
+                moyka.points = moyka.summa * 0.3
+                service_points['Premium'] += moyka.points
+            else:
+                moyka.points = 0
+
+        paginator = Paginator(moyka_list, 10)
+        page_number = request.GET.get('page')
+        moykas = paginator.get_page(page_number)
+
+        form = MoykaForm()
+
+        return render(request, 'customer_profile.html', {
+            'customer': customer,
+            'moykas': moykas,
+            'form': form,
+            'service_points': service_points
+        })
+
+    def post(self, request, unique_id):
+        customer = get_object_or_404(MoykaCustomer, unique_id=unique_id)
+        form = MoykaForm(request.POST)
+
+        if form.is_valid():
+            moyka = form.save(commit=False)
+            moyka.customer = customer
+            moyka.save()
+            messages.success(request, "Moyka muvaffaqiyatli saqlandi!")
+            return redirect('customer_profile', unique_id=unique_id)
+        else:
+            messages.error(request, "Ma'lumotlarni to'ldiring. Xatolik yuz berdi!")
+
+        moyka_list = Moyka.objects.filter(customer=customer).order_by('-id')
+        paginator = Paginator(moyka_list, 10)
+        page_number = request.GET.get('page')
+        moykas = paginator.get_page(page_number)
+
+        return render(request, 'customer_profile.html', {
+            'customer': customer,
+            'moykas': moykas,
+            'form': form
+        })

@@ -49,9 +49,9 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="alert alert-warning">
-                                            <strong>Bugungi eng ko‘p ishlatilgan yonilg‘i:</strong> 
-                                            {% if daily_most_used_petrol %}
-                                                {{ daily_most_used_petrol }}
+                                            <strong>Bugungi eng ko‘p ishlatilgan xizmat turi:</strong> 
+                                            {% if daily_most_used_service %}
+                                                {{ daily_most_used_service }}
                                             {% else %}
                                                 Ma'lumot yo‘q
                                             {% endif %}
@@ -78,11 +78,10 @@
                                 <div class="col-12">
                                     <div class="card">
                                         <div class="card-body">
-            
-                                            <h4 class="card-title">Foydalanuvchilar Ro'yxati</h4>
+                                            <h4 class="card-title">Moyka Foydalanuvchilari Ro'yxati</h4>
                                             <p class="card-subtitle mb-4">
                                                 <a href="#addFoydalanuvchiModal" class="btn btn-primary waves-effect waves-light" data-toggle="modal"> <span>Qo'shish</span></a>    
-                                                <a href="#addEmployeeModal" class="btn btn-outline-success waves-effect waves-light" data-toggle="modal"> <span>Qo'shish</span></a>
+                                                <a href="#addMoykaModal" class="btn btn-outline-info waves-effect waves-light" data-toggle="modal"> <span>Qo'shish</span></a>
                                                 <a href="{% url 'logout' %}" class="btn btn-outline-danger waves-effect waves-light"> <span>Chiqish</span></a>                        
                                             </p>
                                             <div class="table-rep-plugin">
@@ -94,6 +93,8 @@
                                                                 <th>Ism</th>
                                                                 <th>Telefon</th>
                                                                 <th>Manzil</th>
+                                                                <th>Xizmat Turi</th>
+                                                                <th>Summasi</th>
                                                                 <th>Jami Ballar</th>
                                                             </tr>
                                                         </thead>
@@ -108,13 +109,14 @@
                                                                 <td>{{ customer.full_name }}</td>
                                                                 <td>{{ customer.phone_number }}</td>
                                                                 <td>{{ customer.address }}</td>
+                                                                <td>{{ customer.service_type }}</td>
+                                                                <td>{{ customer.summa }}</td>
                                                                 <td>{{ customer.total_points }}</td>
                                                             </tr>
                                                             {% endfor %}
                                                         </tbody>
                                                     </table>
                                                 </div>
-                                                
                                             </div>
                                             <div class="clearfix">
                                                 <div class="hint-text">
@@ -172,7 +174,7 @@
     <div id="addFoydalanuvchiModal" class="modal fade">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form method="post" action="{% url 'index2' %}">
+                <form method="post" action="{% url 'moyka_list' %}">
                     <input type="hidden" name="add_customer" value="1">
                     <div class="modal-header">
                         <h4 class="modal-title">Qo'shish</h4>
@@ -190,18 +192,18 @@
             </div>
         </div>
     </div>
-    <div id="addEmployeeModal" class="modal fade">
+    <div id="addMoykaModal" class="modal fade">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form method="post" action="{% url 'index2' %}">
-                    <input type="hidden" name="add_fuel" value="1">
+                <form method="post" action="{% url 'moyka_list' %}">
+                    <input type="hidden" name="add_moyka" value="1">
                     <div class="modal-header">
                         <h4 class="modal-title">Qo'shish</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     </div>
                     <div class="modal-body">
                         {% csrf_token %} 
-                        {{ fuel_form.as_p }}
+                        {{ moyka_form.as_p }}
                     </div>
                     <div class="modal-footer">
                         <input type="button" class="btn btn-default" data-dismiss="modal" value="Ortga">

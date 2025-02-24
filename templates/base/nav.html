@@ -25,7 +25,7 @@
                 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right p-0"
                     aria-labelledby="page-header-search-dropdown">
                     
-                    <form method="GET" action=""class="p-3">
+                    <form method="GET" action="" class="p-3">
                         <div class="form-group m-0">
                             <div class="input-group">
                                 <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Qidirish..." aria-label="Recipient's username">
@@ -55,13 +55,37 @@
                 <li>
                     <a href="{% url 'index2' %}" class="waves-effect"><i class="feather-airplay"></i><span class="badge badge-pill badge-info float-right">3</span><span>Bosh sahifa</span></a>
                 </li>
-
+                {% if 'zaprafka' in user_groups %}
                 <li>
-                    <a href="" class="has-arrow waves-effect"><i class="feather-briefcase"></i><span>Benzin Mijozlar ro'yxati</span></a>
+                    <a href="{% url 'index2' %}" class="has-arrow waves-effect">
+                        <i class="feather-briefcase"></i><span>Benzin Mijozlar ro'yxati</span>
+                    </a>
                 </li>
-                <li>
-                    <a href="{% url 'moyka_list' %}" class="has-arrow waves-effect"><i class="feather-briefcase"></i><span>Moyka mijozlari ro'yxati</span></a>
-                </li>
+                {% elif 'moyka' in user_groups %}
+                    <li>
+                        <a href="{% url 'moyka_list' %}" class="has-arrow waves-effect">
+                            <i class="feather-briefcase"></i><span>Moyka mijozlari ro'yxati</span>
+                        </a>
+                    </li>
+                {% elif 'umumiy' in user_groups %}
+                    <li>
+                        <a href="{% url 'customer_list' %}" class="has-arrow waves-effect">
+                            <i class="feather-briefcase"></i><span>Benzin Mijozlar ro'yxati</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'moyka_list' %}" class="has-arrow waves-effect">
+                            <i class="feather-briefcase"></i><span>Moyka mijozlari ro'yxati</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="#" class="waves-effect">
+                            <i class="feather-alert-circle"></i><span>Sizga ruxsat yo'q</span>
+                        </a>
+                    </li>
+                {% endif %}
+                
 
                 <!-- <li>
                     <a href="javascript: void(0);" class="has-arrow waves-effect"><i class="feather-list"></i><span>Tables</span></a>

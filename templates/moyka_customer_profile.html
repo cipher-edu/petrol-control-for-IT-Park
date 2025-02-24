@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Moyka Customer Profile - Admin & Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta content="Moyka Customer Profile Admin & Dashboard" name="description" />
+    <meta content="CIPHER-EDU" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <link rel="shortcut icon" href="{% static 'assets/images/favicon.ico' %}">
+    <link href="{% static 'assets/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/css/theme.min.css' %}" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div id="layout-wrapper">
+        {% include 'base/nav.html' %}
+        <div class="main-content">
+            <div class="page-content">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="page-title-box d-flex align-items-center justify-content-between">
+                                <h4 class="mb-0 font-size-18">Moyka Foydalanuvchi Profili</h4>
+                                <div class="page-title-right">
+                                    <ol class="breadcrumb m-0">
+                                        <li class="breadcrumb-item"><a href="javascript: void(0);">Sahifalar</a></li>
+                                        <li class="breadcrumb-item active">Moyka Foydalanuvchi Profili</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">Foydalanuvchi Ma'lumotlari</h4>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Foydalanuvchi ID:</strong> {{ customer.unique_id }}</p>
+                                            <p><strong>Ism:</strong> {{ customer.full_name }}</p>
+                                            <p><strong>Telefon:</strong> {{ customer.phone_number }}</p>
+                                            <p><strong>Manzil:</strong> {{ customer.address }}</p>
+                                            <p><strong>Jami Ballar:</strong> {{ customer.total_points }}</p>
+                                        </div>
+                                    </div>
+                                    <h4 class="card-title mt-4">Xizmatlar Ro'yxati</h4>
+                                    <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addServiceModal">Yangi Xizmat Qo'shish</button>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Xizmat Turi</th>
+                                                    <th>Summasi</th>
+                                                    <th>Ballar</th>
+                                                    <th>Sana</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for moyka in moykas %}
+                                                <tr>
+                                                    <td>{{ moyka.service_type }}</td>
+                                                    <td>{{ moyka.summa }}</td>
+                                                    <td>{{ moyka.points }}</td>
+                                                    <td>{{ moyka.date }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="clearfix">
+                                        <div class="hint-text">
+                                            Barcha xizmatlar <b>{{ moykas.start_index }}</b> dan <b>{{ moykas.end_index }}</b> gacha <b>{{ moykas.paginator.count }}</b> umumiy
+                                        </div>
+                                        <ul class="pagination">
+                                            {% if moykas.has_previous %}
+                                                <li class="page-item">
+                                                    <a href="?page={{ moykas.previous_page_number }}" class="page-link">Ortga</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item disabled"><a class="page-link">Ortga</a></li>
+                                            {% endif %}
+                                            {% for num in moykas.paginator.page_range %}
+                                                {% if moykas.number == num %}
+                                                    <li class="page-item active"><a href="#" class="page-link">{{ num }}</a></li>
+                                                {% else %}
+                                                    <li class="page-item"><a href="?page={{ num }}" class="page-link">{{ num }}</a></li>
+                                                {% endif %}
+                                            {% endfor %}
+                                            {% if moykas.has_next %}
+                                                <li class="page-item">
+                                                    <a href="?page={{ moykas.next_page_number }}" class="page-link">Oldinga</a>
+                                                </li>
+                                            {% else %}
+                                                <li class="page-item disabled"><a class="page-link">Oldinga</a></li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                    <h4 class="card-title mt-4">Yangi Xizmat Qo'shish</h4>
+                                   
+                                    <div id="addServiceModal" class="modal fade">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form method="post" action="{% url 'moyka_profile' customer.unique_id %}">
+                                                    {% csrf_token %}
+                                                    <div class="modal-header">
+                                                        <h4 class="modal-title">Yangi Xizmat Qo'shish</h4>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <input type="hidden" name="customer" value="{{ customer.id }}">
+                                                        <div class="form-group">
+                                                            <label for="service_type">Xizmat Turi</label>
+                                                            {{ form.service_type }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-default" data-dismiss="modal">Bekor qilish</button>
+                                                        <button type="submit" class="btn btn-success">Qo'shish</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            2025 © IT Park Navoiy.
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="text-sm-right d-none d-sm-block">
+                                Design & Develop by CIPHER-EDU
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+    <div class="menu-overlay"></div>
+    <script src="{% static 'assets/js/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/js/metismenu.min.js' %}"></script>
+    <script src="{% static 'assets/js/waves.js' %}"></script>
+    <script src="{% static 'assets/js/simplebar.min.js' %}"></script>
+    <script src="{% static 'assets/js/theme.js' %}"></script>
+</body>
+</html>

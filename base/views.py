@@ -44,7 +44,7 @@ class CustomerListView(LoginRequiredMixin, View):
         if query:
             customers_list = customers_list.filter(
                 Q(unique_id__icontains=query) |
-                Q(full_name__icontains=query) |
+                Q(full_name__icontainstr=query) |
                 Q(phone_number__icontains=query) |
                 Q(address__icontains=query)
             )
@@ -184,7 +184,7 @@ class CustomerProfileView1(LoginRequiredMixin, View):
     def get(self, request):
         query = request.GET.get('q', '')  # Qidiruv so‘rovi
         selected_date = request.GET.get('date', '')  # Kalendar orqali tanlangan sana
-
+        user_groups = list(request.user.groups.values_list('name', flat=True))
         customers_list = Customer.objects.all()
 
         # Qidiruv
@@ -224,7 +224,8 @@ class CustomerProfileView1(LoginRequiredMixin, View):
             'daily_customers': daily_customers,
             'daily_most_used_petrol': daily_most_used_petrol,
             'query': query,
-            'selected_date': selected_date
+            'selected_date': selected_date,
+            'user_groups':user_groups,
         })
 
     def post(self, request):
@@ -264,7 +265,7 @@ class MoykaCustomerListView(LoginRequiredMixin, View):
     def get(self, request):
         query = request.GET.get('q', '')  # Qidiruv so‘rovi
         selected_date = request.GET.get('date', '')  # Kalendar orqali tanlangan sana
-
+        user_groups = list(request.user.groups.values_list('name', flat=True))
         customers_list = MoykaCustomer.objects.all()
 
         # Qidiruv
@@ -304,7 +305,8 @@ class MoykaCustomerListView(LoginRequiredMixin, View):
             'daily_customers': daily_customers,
             'daily_most_used_service': daily_most_used_service,
             'query': query,
-            'selected_date': selected_date
+            'selected_date': selected_date,
+            'user_groups': user_groups,
         })
 
     def post(self, request):
@@ -336,7 +338,11 @@ class MoykaCustomerListView(LoginRequiredMixin, View):
     def add_moyka(self, request):
         moyka_form = MoykaForm(request.POST)
         if moyka_form.is_valid():
-            moyka_form.save()
+            moyka = moyka_form.save(commit=False)
+            customer_id = request.POST.get('customer')
+            customer = get_object_or_404(MoykaCustomer, id=customer_id)
+            moyka.customer = customer
+            moyka.save()
             messages.success(request, "Moyka muvaffaqiyatli saqlandi!")
         else:
             messages.error(request, "Moyka saqlanmadi, ma'lumotlarni tekshiring!")
@@ -369,10 +375,10 @@ class MoykaCustomerProfileView(LoginRequiredMixin, View):
         paginator = Paginator(moyka_list, 10)
         page_number = request.GET.get('page')
         moykas = paginator.get_page(page_number)
-
+        user_groups = list(request.user.groups.values_list('name', flat=True))
         form = MoykaForm()
 
-        return render(request, 'customer_profile.html', {
+        return render(request, 'moyka_customer_profile.html', {
             'customer': customer,
             'moykas': moykas,
             'form': form,
@@ -388,7 +394,7 @@ class MoykaCustomerProfileView(LoginRequiredMixin, View):
             moyka.customer = customer
             moyka.save()
             messages.success(request, "Moyka muvaffaqiyatli saqlandi!")
-            return redirect('customer_profile', unique_id=unique_id)
+            return redirect('moyka_profile', unique_id=unique_id)
         else:
             messages.error(request, "Ma'lumotlarni to'ldiring. Xatolik yuz berdi!")
 
@@ -396,9 +402,10 @@ class MoykaCustomerProfileView(LoginRequiredMixin, View):
         paginator = Paginator(moyka_list, 10)
         page_number = request.GET.get('page')
         moykas = paginator.get_page(page_number)
-
-        return render(request, 'customer_profile.html', {
+        user_groups = list(request.user.groups.values_list('name', flat=True))
+        return render(request, 'moyka_customer_profile.html', {
             'customer': customer,
             'moykas': moykas,
-            'form': form
+            'form': form,
+            'user_groups': user_groups
         })

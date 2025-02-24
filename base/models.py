@@ -8,7 +8,7 @@ PETROL_TYPES = [
     (95, '95'),
 ]
 
-Moyka_types = [
+MOYKA_TYPES = [
     ('Ekonom', 'Ekonom'),
     ('Bussines', 'Bussines'),
     ('Premium', 'Premium'),
@@ -38,6 +38,7 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.full_name
+
 class MoykaCustomer(models.Model):
     unique_id = models.CharField(max_length=7, 
                                  unique=True, 
@@ -57,11 +58,12 @@ class MoykaCustomer(models.Model):
     def generate_unique_id_customer(self):
         while True:
             unique_id = ''.join(random.choices('0123456789', k=7))
-            if not Customer.objects.filter(unique_id=unique_id).exists():
+            if not MoykaCustomer.objects.filter(unique_id=unique_id).exists():
                 return unique_id
 
     def __str__(self):
         return self.full_name
+
 class FuelPurchase(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, verbose_name="Mijoz")
     petrol_type = models.IntegerField(choices=PETROL_TYPES, verbose_name="Yonilg‘i turi")
@@ -84,8 +86,7 @@ class FuelPurchase(models.Model):
 
 class Moyka(models.Model):
     customer = models.ForeignKey(MoykaCustomer, on_delete=models.CASCADE, verbose_name="Mijoz")
-    service_type = models.CharField(max_length=10, choices=Moyka_types, verbose_name="Xizmat turi")
-    summa = models.FloatField(verbose_name="Summasi")
+    service_type = models.CharField(max_length=10, choices=MOYKA_TYPES, verbose_name="Xizmat turi")
     date = models.DateTimeField(auto_now_add=True, verbose_name="Xarid sanasi")
 
     def save(self, *args, **kwargs):
@@ -96,10 +97,21 @@ class Moyka(models.Model):
 
     def calculate_points(self):
         if self.service_type == 'Ekonom':
-            return self.summa * 0.1
+            return 80000 * 0.1
         elif self.service_type == 'Bussines':
-            return self.summa * 0.2
+            return 100000 * 0.2
         elif self.service_type == 'Premium':
-            return self.summa * 0.3
+            return 150000 * 0.3
+        else:
+            return 0
+
+    @property
+    def summa(self):
+        if self.service_type == 'Ekonom':
+            return 80000
+        elif self.service_type == 'Bussines':
+            return 100000
+        elif self.service_type == 'Premium':
+            return 150000
         else:
             return 0

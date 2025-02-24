@@ -80,8 +80,8 @@
                                         <div class="card-body">
                                             <h4 class="card-title">Moyka Foydalanuvchilari Ro'yxati</h4>
                                             <p class="card-subtitle mb-4">
-                                                <a href="#addFoydalanuvchiModal" class="btn btn-primary waves-effect waves-light" data-toggle="modal"> <span>Qo'shish</span></a>    
-                                                <a href="#addMoykaModal" class="btn btn-outline-info waves-effect waves-light" data-toggle="modal"> <span>Qo'shish</span></a>
+                                                <a href="#addFoydalanuvchiModal" class="btn btn-primary waves-effect waves-light" data-toggle="modal"> <span>Foydalanuvchi qo'shish</span></a>    
+                                                <a href="#addMoykaModal" class="btn btn-outline-info waves-effect waves-light" data-toggle="modal"> <span>Xizmat ko'rsatish</span></a>
                                                 <a href="{% url 'logout' %}" class="btn btn-outline-danger waves-effect waves-light"> <span>Chiqish</span></a>                        
                                             </p>
                                             <div class="table-rep-plugin">
@@ -102,7 +102,7 @@
                                                             {% for customer in customers %}
                                                             <tr>
                                                                 <td>
-                                                                    <a href="{% url 'customer_profile' customer.unique_id %}">
+                                                                    <a href="{% url 'moyka_profile' customer.unique_id %}">
                                                                         {{ customer.unique_id }}
                                                                     </a>
                                                                 </td>
@@ -202,8 +202,19 @@
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     </div>
                     <div class="modal-body">
-                        {% csrf_token %} 
-                        {{ moyka_form.as_p }}
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="customer">Foydalanuvchi</label>
+                            <select name="customer" id="customer" class="form-control">
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}">{{ customer.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="service_type">Xizmat Turi</label>
+                            {{ moyka_form.service_type }}
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <input type="button" class="btn btn-default" data-dismiss="modal" value="Ortga">
@@ -262,6 +273,10 @@
                 }
             });
         });
+
+        function setCustomerId(customerId) {
+            document.getElementById('customer-id').value = customerId;
+        }
     </script>
 </body>
 </html>

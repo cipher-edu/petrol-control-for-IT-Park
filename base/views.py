@@ -4,18 +4,16 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.db.models import Count, Sum, F, ExpressionWrapper, DecimalField, Q
+from django.utils.timezone import now  # Import now from django.utils.timezone
 from .models import *
 from .forms import *
-from django.contrib import messages
-from django.db.models import Count
-from django.utils.timezone import now
-from django.db.models import Q
-
-# bazovoy kodlar
+# Basic code
 def custom_logout(request):
     logout(request)
     return redirect('login')
-  
+
 def handler404(request, exception):
     return render(request, '404.html', status=404)
 
@@ -26,17 +24,18 @@ def add_fuel(request):
         if fuel_form.is_valid():
             fuel_form.save()
             messages.success(request, "Yonilg‘i muvaffaqiyatli saqlandi!")
-            return redirect('customer_list')  # Ma'lumot saqlangandan keyin qayta yuklash
+            return redirect('customer_list')  # Redirect after saving
         else:
             messages.error(request, "Xatolik yuz berdi! Ma’lumotlarni to‘ldiring.")
 
     return redirect('customer_list')
 
-#asosiy kodlar
+# Main views
 class CustomerListView(LoginRequiredMixin, View):
     def get(self, request):
         query = request.GET.get('q', '')  # Qidiruv so‘rovi
         selected_date = request.GET.get('date', '')  # Kalendar orqali tanlangan sana
+        user_groups = list(request.user.groups.values_list('name', flat=True))
 
         customers_list = Customer.objects.all()
 
@@ -44,7 +43,7 @@ class CustomerListView(LoginRequiredMixin, View):
         if query:
             customers_list = customers_list.filter(
                 Q(unique_id__icontains=query) |
-                Q(full_name__icontainstr=query) |
+                Q(full_name__icontains=query) |
                 Q(phone_number__icontains=query) |
                 Q(address__icontains=query)
             )
@@ -79,7 +78,8 @@ class CustomerListView(LoginRequiredMixin, View):
             'daily_customers': daily_customers,
             'daily_most_used_petrol': daily_most_used_petrol,
             'query': query,
-            'selected_date': selected_date
+            'selected_date': selected_date,
+            'user_groups': user_groups,
         })
 
     def post(self, request):
@@ -116,11 +116,12 @@ class CustomerListView(LoginRequiredMixin, View):
         else:
             messages.error(request, "Yonilg‘i saqlanmadi, ma'lumotlarni tekshiring!")
         return redirect('customer_list')
-    
+
 class CustomerProfileView(LoginRequiredMixin, View):
     def get(self, request, unique_id):
         customer = get_object_or_404(Customer, unique_id=unique_id)
         purchases_list = FuelPurchase.objects.filter(customer=customer).order_by('-id')
+        user_groups = list(request.user.groups.values_list('name', flat=True))
 
         fuel_points = {
             80: 0,
@@ -153,7 +154,8 @@ class CustomerProfileView(LoginRequiredMixin, View):
             'customer': customer,
             'purchases': purchases,
             'form': form,
-            'fuel_points': fuel_points
+            'fuel_points': fuel_points,
+            'user_groups': user_groups,
         })
 
     def post(self, request, unique_id):
@@ -173,21 +175,23 @@ class CustomerProfileView(LoginRequiredMixin, View):
         paginator = Paginator(purchases_list, 10)
         page_number = request.GET.get('page')
         purchases = paginator.get_page(page_number)
+        user_groups = list(request.user.groups.values_list('name', flat=True))
 
         return render(request, 'customer_profile.html', {
             'customer': customer,
             'purchases': purchases,
-            'form': form
+            'form': form,
+            'user_groups': user_groups,
         })
 
 class CustomerProfileView1(LoginRequiredMixin, View):
     def get(self, request):
-        query = request.GET.get('q', '')  # Qidiruv so‘rovi
-        selected_date = request.GET.get('date', '')  # Kalendar orqali tanlangan sana
+        query = request.GET.get('q', '')  # Search query
+        selected_date = request.GET.get('date', '')  # Selected date from calendar
         user_groups = list(request.user.groups.values_list('name', flat=True))
         customers_list = Customer.objects.all()
 
-        # Qidiruv
+        # Search functionality
         if query:
             customers_list = customers_list.filter(
                 Q(unique_id__icontains=query) |
@@ -196,12 +200,14 @@ class CustomerProfileView1(LoginRequiredMixin, View):
                 Q(address__icontains=query)
             )
 
+        # Filter by date
         if selected_date:
             customers_list = customers_list.filter(created_at__date=selected_date)
             
         today = now().date()
         daily_customers = Customer.objects.filter(created_at__date=today).count()
 
+        # Most used petrol type today
         daily_top_petrol = (
             FuelPurchase.objects.filter(date__date=today)
             .values('petrol_type')
@@ -225,7 +231,7 @@ class CustomerProfileView1(LoginRequiredMixin, View):
             'daily_most_used_petrol': daily_most_used_petrol,
             'query': query,
             'selected_date': selected_date,
-            'user_groups':user_groups,
+            'user_groups': user_groups,
         })
 
     def post(self, request):
@@ -263,26 +269,28 @@ class CustomerProfileView1(LoginRequiredMixin, View):
 
 class MoykaCustomerListView(LoginRequiredMixin, View):
     def get(self, request):
-        query = request.GET.get('q', '')  # Qidiruv so‘rovi
-        selected_date = request.GET.get('date', '')  # Kalendar orqali tanlangan sana
+        query = request.GET.get('q', '')  # Search query
+        selected_date = request.GET.get('date', '')  # Selected date from calendar
         user_groups = list(request.user.groups.values_list('name', flat=True))
         customers_list = MoykaCustomer.objects.all()
 
-        # Qidiruv
+        # Search functionality
         if query:
             customers_list = customers_list.filter(
-               Q(unique_id__icontains=query) |
+                Q(unique_id__icontains=query) |
                 Q(full_name__icontains=query) |
                 Q(phone_number__icontains=query) |
                 Q(address__icontains=query)
             )
 
+        # Filter by date
         if selected_date:
             customers_list = customers_list.filter(created_at__date=selected_date)
             
         today = now().date()
         daily_customers = MoykaCustomer.objects.filter(created_at__date=today).count()
 
+        # Most used service type today
         daily_top_service = (
             Moyka.objects.filter(date__date=today)
             .values('service_type')
@@ -352,6 +360,7 @@ class MoykaCustomerProfileView(LoginRequiredMixin, View):
     def get(self, request, unique_id):
         customer = get_object_or_404(MoykaCustomer, unique_id=unique_id)
         moyka_list = Moyka.objects.filter(customer=customer).order_by('-id')
+        user_groups = list(request.user.groups.values_list('name', flat=True))
 
         service_points = {
             'Ekonom': 0,
@@ -375,14 +384,15 @@ class MoykaCustomerProfileView(LoginRequiredMixin, View):
         paginator = Paginator(moyka_list, 10)
         page_number = request.GET.get('page')
         moykas = paginator.get_page(page_number)
-        user_groups = list(request.user.groups.values_list('name', flat=True))
+
         form = MoykaForm()
 
         return render(request, 'moyka_customer_profile.html', {
             'customer': customer,
             'moykas': moykas,
             'form': form,
-            'service_points': service_points
+            'service_points': service_points,
+            'user_groups': user_groups,
         })
 
     def post(self, request, unique_id):
@@ -403,9 +413,10 @@ class MoykaCustomerProfileView(LoginRequiredMixin, View):
         page_number = request.GET.get('page')
         moykas = paginator.get_page(page_number)
         user_groups = list(request.user.groups.values_list('name', flat=True))
+
         return render(request, 'moyka_customer_profile.html', {
             'customer': customer,
             'moykas': moykas,
             'form': form,
-            'user_groups': user_groups
+            'user_groups': user_groups,
         })

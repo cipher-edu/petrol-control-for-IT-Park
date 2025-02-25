@@ -28,7 +28,7 @@
                     <div class="row">
                         <div class="col-12">
                             <div class="page-title-box d-flex align-items-center justify-content-between">
-                                <h4 class="mb-0 font-size-18">Ma'lumotlar ro'yxati</h4>
+                                <h4 class="mb-0 font-size-18">Statistika</h4>
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
                                         <li class="breadcrumb-item"><a href="javascript: void(0);">Sahifalar</a></li>
@@ -39,116 +39,7 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-12">
-                            <div class="container">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="alert alert-info">
-                                            <strong>Bugungi yangi foydalanuvchilar:</strong> {{ daily_customers }}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="alert alert-warning">
-                                            <strong>Bugungi eng ko‘p ishlatilgan yonilg‘i:</strong> 
-                                            {% if daily_most_used_petrol %}
-                                                {{ daily_most_used_petrol }}
-                                            {% else %}
-                                                Ma'lumot yo‘q
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% if messages %}
-                            <div class="alert alert-dismissible p-2 m-2">
-                                {% for message in messages %}
-                                <div class="alert {% if message.tags == 'success' %}alert-success{% else %}alert-danger{% endif %} text-sm p-2">
-                                    <small>{{ message }}</small>
-                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                                </div>
-                                {% endfor %}
-                            </div>
-                            {% endif %}
-                            <form method="GET" action="" class="form-inline mb-3">
-                                <input type="text" name="q" value="{{ query }}" class="form-control mr-2" placeholder="Qidirish...">
-                                <input type="text" id="date-picker" name="date" class="form-control mr-2" value="{{ selected_date }}" placeholder="Kerakli sanani tanlang">
-                                <button type="submit" class="btn btn-primary">Filtrlash</button>
-                            </form>
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-body">
-            
-                                            <h4 class="card-title">Foydalanuvchilar Ro'yxati</h4>
-                                            <p class="card-subtitle mb-4">
-                                                <a href="#addFoydalanuvchiModal" class="btn btn-primary waves-effect waves-light" data-toggle="modal"> <span>Qo'shish</span></a>    
-                                                <a href="#addEmployeeModal" class="btn btn-outline-success waves-effect waves-light" data-toggle="modal"> <span>Qo'shish</span></a>
-                                                <a href="{% url 'logout' %}" class="btn btn-outline-danger waves-effect waves-light"> <span>Chiqish</span></a>                        
-                                            </p>
-                                            <div class="table-rep-plugin">
-                                                <div class="table-responsive b-0" data-pattern="priority-columns">
-                                                    <table id="tech-companies-1" class="table  table-striped">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Foydalanuvchi ID</th>
-                                                                <th>Ism</th>
-                                                                <th>Telefon</th>
-                                                                <th>Manzil</th>
-                                                                <th>Jami Ballar</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {% for customer in customers %}
-                                                            <tr>
-                                                                <td>
-                                                                    <a href="{% url 'customer_profile' customer.unique_id %}">
-                                                                        {{ customer.unique_id }}
-                                                                    </a>
-                                                                </td>
-                                                                <td>{{ customer.full_name }}</td>
-                                                                <td>{{ customer.phone_number }}</td>
-                                                                <td>{{ customer.address }}</td>
-                                                                <td>{{ customer.total_points }}</td>
-                                                            </tr>
-                                                            {% endfor %}
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                                
-                                            </div>
-                                            <div class="clearfix">
-                                                <div class="hint-text">
-                                                    Barcha foydalanuvchilar <b>{{ customers.start_index }}</b> dan <b>{{ customers.end_index }}</b> gacha <b>{{ customers.paginator.count }}</b> umumiy
-                                                </div>
-                                                <ul class="pagination">
-                                                    {% if customers.has_previous %}
-                                                        <li class="page-item">
-                                                            <a href="?page={{ customers.previous_page_number }}" class="page-link">Ortga</a>
-                                                        </li>
-                                                    {% else %}
-                                                        <li class="page-item disabled"><a class="page-link">Ortga</a></li>
-                                                    {% endif %}
-                                                    {% for num in customers.paginator.page_range %}
-                                                        {% if customers.number == num %}
-                                                            <li class="page-item active"><a href="#" class="page-link">{{ num }}</a></li>
-                                                        {% else %}
-                                                            <li class="page-item"><a href="?page={{ num }}" class="page-link">{{ num }}</a></li>
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                    {% if customers.has_next %}
-                                                        <li class="page-item">
-                                                            <a href="?page={{ customers.next_page_number }}" class="page-link">Oldinga</a>
-                                                        </li>
-                                                    {% else %}
-                                                        <li class="page-item disabled"><a class="page-link">Oldinga</a></li>
-                                                    {% endif %}
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> <!-- end col -->
-                            </div>
-                        </div>
+                        IT Park Navoiy
                     </div>
                 </div>
             </div>
